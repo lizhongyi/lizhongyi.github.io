@@ -1,37 +1,599 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>正在学做网页</title>
-
-  <style>
-
-  h1 {
-    font-size: 100px;
-    color: blueviolet;
-
-  }
-
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>64卦</title>
 </head>
+
+<style>
+    body {
+        background: #b9caa7;
+    }
+
+    #gua_64 {
+        width: 800px;
+        margin: 100px auto;
+       padding-top: 1500px;
+        display: none1;
+    }
+
+    .gua_item {
+        display: inline-block;
+        width: 100px;
+        text-align: center;
+
+    }
+
+    .gua_char {
+        font-size: 50px;
+    }
+
+    #gua_64_huan {
+
+        width: 1280px;
+        height: 1280px;
+        left: 50%;
+        margin-left: -680px;
+
+        position: absolute;
+        top: 30px;
+        z-index: -2;
+    }
+
+    .item-huan-bar {
+        width: 20px;
+        height: 50px;
+        position: absolute;
+        top: 0px;
+        left: 50%;
+        text-align: center;
+        transform-origin: right 600px;
+
+    }
+
+    #xingxiu_huan {
+
+        width: 880px;
+        height: 880px;
+        left: 50%;
+        margin-left: -498px;
+
+        position: absolute;
+        top: 136px;
+        z-index: -1;
+        transform: rotate(42deg)
+    }
+
+    .item-xingxiu-bar {
+        width: 20px;
+        height: 40px;
+        position: absolute;
+        top: 0px;
+        color: rgb(233, 43, 10);
+        left: 50%;
+        text-align: center;
+        transform-origin: right 440px;
+
+    }
+
+
+    #ganzhi_huan {
+
+        width: 1000px;
+        height: 1000px;
+        left: 50%;
+        margin-left: -540px;
+
+        position: absolute;
+        top: 130px;
+        z-index: -2;
+
+    }
+
+    .item-ganzhi-bar {
+        width: 20px;
+        height: 40px;
+        position: absolute;
+        top: 0px;
+        left: 50%;
+        color: aqua;
+        text-align: center;
+        transform-origin: right 500px;
+
+    }
+
+    .huan-cha {
+        font-size: 40px;
+    }
+
+
+    #jieqi_huan {
+
+        width: 600px;
+        height: 600px;
+        left: 50%;
+        margin-left: -294px;
+
+        position: absolute;
+        top: 216px;
+        z-index: -2;
+        transform: rotate(48deg)
+    }
+
+    .item-jieqi-bar {
+        width: 20px;
+        height: 40px;
+        color: rgb(247, 247, 17);
+        position: absolute;
+        top: 0px;
+        left: 50%;
+        text-align: center;
+        transform-origin: right 380px;
+
+    }
+
+
+    #tiangan_huan {
+
+        width: 580px;
+        height: 580px;
+        left: 50%;
+        margin-left: -334px;
+
+        position: absolute;
+        top: 296px;
+        z-index: 1;
+        transform: rotate(-2deg)
+    }
+
+    .item-tiangan-bar {
+        width: 80px;
+        height: 40px;
+        color: rgb(239, 247, 238);
+        position: absolute;
+        top: 30px;
+        left: 50%;
+        text-align: center;
+        transform-origin: 45px 310px;
+
+    }
+
+
+    #dizhi_huan {
+
+        width: 580px;
+        height: 580px;
+        left: 50%;
+        margin-left: -334px;
+
+        position: absolute;
+        top: 296px;
+        z-index: 1;
+        transform: rotate(-2deg)
+    }
+
+    .item-dizhi-bar {
+        width: 80px;
+        height: 40px;
+        color: rgb(11, 11, 11);
+        position: absolute;
+        top: 30px;
+        left: 50%;
+        text-align: center;
+        transform-origin: 45px 310px;
+
+    }
+
+
+
+    #wuxing_huan {
+
+        width: 580px;
+        height: 580px;
+        left: 50%;
+        margin-left: -334px;
+
+        position: absolute;
+        top: 296px;
+        z-index: 1;
+        transform: rotate(-2deg)
+    }
+
+    .item-wuxing-bar {
+        width: 80px;
+        height: 40px;
+        color: rgb(5, 68, 37);
+        position: absolute;
+        top: 30px;
+        left: 50%;
+        padding-top: 50px;
+
+        text-align: center;
+        transform-origin: 45px 310px;
+
+    }
+
+    #bagua_hou_huan {
+
+        width: 580px;
+        height: 580px;
+        left: 50%;
+        margin-left: -334px;
+
+        position: absolute;
+        top: 296px;
+        z-index: 1;
+        transform: rotate(-2deg) 
+    }
+
+    .item-bagua_hou-bar {
+        width: 80px;
+        height: 40px;
+        font-size: 40px;
+        color: rgb(5, 68, 37);
+        position: absolute;
+        top: 30px;
+        left: 50%;
+        padding-top: 100px;
+
+        text-align: center;
+        transform-origin: 45px 310px;
+        
+
+    }
+
+    .item-bagua_xian-bar span.char {
+       
+        /* display: block;
+        transform: rotate(180deg); */
+       
+    }
+
+
+    #bagua_xian_huan {
+
+        width: 580px;
+        height: 580px;
+        left: 50%;
+        margin-left: -334px;
+
+        position: absolute;
+        top: 296px;
+        z-index: 1;
+        transform: rotate(-2deg)
+    }
+
+    .item-bagua_xian-bar {
+        width: 80px;
+        height: 40px;
+        font-size: 40px;
+        color: rgb(5, 68, 37);
+        position: absolute;
+        top: 30px;
+        left: 50%;
+        padding-top: 180px;
+
+        text-align: center;
+        transform-origin: 45px 310px;
+
+    }
+
+    #taiji{
+        font-size: 150px;
+        width: 150px;
+        height: 150px;
+        margin-left: -40px;
+        left: 50%;
+        top: 550px;
+        position: absolute;
+        transform: rotate(-90deg) rotateX(180deg);;
+        
+    }
+
+    #app-box {
+        width: 1280px;
+        margin: 0 auto;
+        position: relative;
+    }
+</style>
+
 <body>
-  <div>
-  <h1>  我是大标题 </h1>
-  <p>我是正文我是正文我是正文我是正文我是正文我是正文</p>
-  <button onclick="tip()">点我会有提示</button>
-  <h2>下面是一个表格</h2>
-  <table>
-    <tr>
-      <td>姓名</td>
-      <td>年龄</td>
-    </tr>
-  </table>
+    <div id="app-box">
+    <div id="gua_64"></div>
+    <div id="gua_64_huan"></div>
+    <div id="xingxiu_huan"></div>
+    <div id="ganzhi_huan"></div>
+    <div id="jieqi_huan"></div>
+    <div id="tiangan_huan"></div>
+    <div id="dizhi_huan"></div>
+    <div id="wuxing_huan"></div>
+    <div id="bagua_hou_huan"></div>
+    <div id="bagua_xian_huan"></div>
+
+    <div id="taiji">☯</div>
 </div>
-<script>
-  function tip() {
-    alert('我是提示')
-  }
-</script>
 </body>
+
 </html>
+
+
+<script>
+    function number_to_bin6(num) {
+        var bin_str = num.toString(2)
+        if (bin_str.length == 5) {
+            bin_str = "0" + bin_str
+        }
+        if (bin_str.length == 4) {
+            bin_str = "00" + bin_str
+        }
+        if (bin_str.length == 3) {
+            bin_str = "000" + bin_str
+        }
+        if (bin_str.length == 2) {
+            bin_str = "0000" + bin_str
+        }
+        if (bin_str.length == 1) {
+            bin_str = "00000" + bin_str
+        }
+        return bin_str
+    }
+
+    const xingxiu = ["角木蛟", "亢金龙", "女土蝠", "房日兔", "心月狐", "尾火虎", "箕水豹",
+        "井木犴", "鬼金羊", "柳土獐", "星日马", "张月鹿", "翼火蛇", "轸水蚓",
+        "奎木狼", "娄金狗", "胃土彘", "昴日鸡", "毕月乌", "觜火猴", "参水猿",
+        "斗木獬", "牛金牛", "女土蝠", "虚日鼠", "危月燕", "室火猪", "壁水貐"
+
+    ]
+
+    var ganzhi = `甲子 ▪乙丑 ▪丙寅 ▪丁卯 ▪戊辰 ▪己巳 ▪庚午 ▪辛未 ▪壬申 ▪癸酉 ▪甲戌 ▪乙亥 ▪丙子 ▪丁丑 ▪戊寅 ▪己卯 ▪庚辰 ▪辛巳 ▪壬午 ▪癸未 ▪甲申 ▪乙酉 ▪丙戌 ▪丁亥 ▪戊子 ▪己丑 ▪庚寅 ▪辛卯 ▪壬辰 ▪癸巳 ▪甲午 ▪乙未 ▪丙申 ▪丁酉 ▪戊戌 ▪己亥 ▪庚子 ▪辛丑 ▪壬寅 ▪癸卯 ▪甲辰 ▪乙巳 ▪丙午 ▪丁未 ▪戊申 ▪己酉 ▪庚戌 ▪辛亥 ▪壬子 ▪癸丑 ▪甲寅 ▪乙卯 ▪丙辰 ▪丁巳 ▪戊午 ▪己未 ▪庚申 ▪辛酉 ▪壬戌 ▪癸亥`
+    ganzhi = ganzhi.split(" ▪")
+    //ganzhi = ganzhi.sort()
+    console.log(ganzhi.length)
+    var gua_64 = [
+        { 'char': '䷁', name: '坤' },
+        { 'char': '䷖', name: '剥' },
+        { 'char': '䷇', name: '比' },
+        { 'char': '䷓', name: '观' },
+        { 'char': '䷏', name: '豫' },
+        { 'char': '䷢', name: '晋' },
+        { 'char': '䷬', name: '萃' },
+        { 'char': '䷋', name: '否' },
+        { 'char': '䷎', name: '谦' },
+        { 'char': '䷳', name: '艮' },
+        { 'char': '䷦', name: '蹇' },
+        { 'char': '䷴', name: '渐' },
+        { 'char': '䷽', name: '小过' },
+        { 'char': '䷥', name: '旅' },
+        { 'char': '䷞', name: '咸' },
+        { 'char': '䷠', name: '遁' },
+        { 'char': '䷆', name: '师' },
+        { 'char': '䷃', name: '蒙' },
+        { 'char': '䷜', name: '坎' },
+        { 'char': '䷺', name: '涣' },
+        { 'char': '䷧', name: '解' },
+        { 'char': '䷿', name: '未济' },
+        { 'char': '䷮', name: '困' },
+        { 'char': '䷅', name: '讼' },
+        { 'char': '䷭', name: '升' },
+        { 'char': '䷑', name: '蛊' },
+        { 'char': '䷯', name: '井' },
+        { 'char': '䷸', name: '巽' },
+        { 'char': '䷟', name: '恒' },
+        { 'char': '䷱', name: '鼎' },
+        { 'char': '䷛', name: '大过' },
+        { 'char': '䷫', name: '姤' },
+        { 'char': '䷗', name: '复' },
+        { 'char': '䷚', name: '颐' },
+        { 'char': '䷂', name: '屯' },
+        { 'char': '䷩', name: '益' },
+        { 'char': '䷲', name: '震' },
+        { 'char': '䷔', name: '噬嗑' },
+        { 'char': '䷐', name: '随' },
+        { 'char': '䷘', name: '无妄' },
+        { 'char': '䷣', name: '明夷' },
+        { 'char': '䷕', name: '贲' },
+        { 'char': '䷾', name: '既济' },
+        { 'char': '䷤', name: '家人' },
+        { 'char': '䷶', name: '丰' },
+        { 'char': '䷝', name: '离' },
+        { 'char': '䷰', name: '革' },
+        { 'char': '䷌', name: '同人' },
+        { 'char': '䷒', name: '临' },
+        { 'char': '䷨', name: '损' },
+        { 'char': '䷻', name: '节' },
+        { 'char': '䷼', name: '中孚' },
+        { 'char': '䷵', name: '归妹' },
+        { 'char': '䷥', name: '睽' },
+        { 'char': '䷹', name: '兑' },
+        { 'char': '䷉', name: '履' },
+        { 'char': '䷊', name: '泰' },
+        { 'char': '䷙', name: '大畜' },
+        { 'char': '䷄', name: '需' },
+        { 'char': '䷈', name: '小畜' },
+        { 'char': '䷡', name: '大壮' },
+        { 'char': '䷍', name: '大有' },
+        { 'char': '䷪', name: '夬' },
+        { 'char': '䷀', name: '乾' },
+    ]
+
+
+    var show_64gua = function () {
+        let gua_64_copy = JSON.parse(JSON.stringify(gua_64))
+        for (let i = 0; i < gua_64_copy.length; i++) {
+            gua_64_copy[i].bin6 = number_to_bin6(i)
+            gua_64_copy[i].n16 = gua_64_copy[i].bin6.replace(/1/gim, 'F')
+            gua_64_copy[i].index = i
+        }
+        return gua_64_copy
+    }
+
+    function show_64_html() {
+
+        var html_64 = ''
+        let arr_64 = show_64gua()
+
+        for (var i = 0; i < 64; i++) {
+            html_64 += '<div class="gua_item"><div class="gua_char" style="color:#' + arr_64[i].n16 + '"> ' + arr_64[i].char + '</div> <div class="gua_name"> ' + arr_64[i].name + '</div> </div>'
+        }
+        document.getElementById("gua_64").innerHTML = html_64
+
+    }
+
+    function show_ganzhi() {
+        let html_ganzhi_60_huan = ''
+
+        for (let i = 0; i < 60; i++) {
+            html_ganzhi_60_huan += '<div class="item-ganzhi-bar" style=" width:40px;transform: rotate(' + (i) * 6 + 'deg)">' + ganzhi[i] + '</div>'
+        }
+        document.getElementById("ganzhi_huan").innerHTML = html_ganzhi_60_huan
+    }
+
+
+    function show_64_huan() {
+
+        let arr_64 = show_64gua()
+        let arr_64_1 = JSON.parse(JSON.stringify(arr_64))
+
+        let go_to_kun = arr_64_1.filter((item, index) => index < 32)
+        //go_to_kun = go_to_kun.sort((a,b)=>b.index-a.index)
+        let fu_to_qian = arr_64_1.filter((item, index) => index > 31)
+
+        fu_to_qian = fu_to_qian.sort((a, b) => b.index - a.index)
+
+        let arr_64_2 = go_to_kun.concat(fu_to_qian)
+        var html_64_huan = ''
+        for (var i = 0; i < 64; i++) {
+            html_64_huan += '<div class="item-huan-bar" style=" width:40px; color:#' + arr_64_2[i].n16 + ';transform: rotate(' + (i) * 5.625 + 'deg)"> ' + arr_64_2[i].name + '<br/><span class="huan-cha">' + arr_64_2[i].char + '</span></div>  '
+        }
+        document.getElementById("gua_64_huan").innerHTML = html_64_huan
+    }
+
+
+    function show_xingxiu() {
+
+        let html_28_huan = ''
+        for (let i = 0; i < 28; i++) {
+            html_28_huan += '<div class="item-xingxiu-bar" style=" width:80px;transform: rotate(' + (i + 1) * 12.857 + 'deg)">' + xingxiu[i] + '</div>'
+        }
+        document.getElementById("xingxiu_huan").innerHTML = html_28_huan
+    }
+
+    function show_jieqi() {
+        let jieqi = `立春、谷雨、惊蛰、春分、清明、谷雨、立夏、小满、芒种、夏至、小暑、大暑、立秋、处暑、白露、秋分、寒露、霜降、立冬、小雪、大雪、冬至、小寒、大寒`
+        jieqi = jieqi.split("、")
+        let jieqi_huan_html = ''
+
+        for (let i = 0; i < 24; i++) {
+            jieqi_huan_html += '<div class="item-jieqi-bar" style=" width:80px;transform: rotate(' + (i) * 15 + 'deg)">' + jieqi[i] + '</div>'
+        }
+
+        document.getElementById('jieqi_huan').innerHTML = jieqi_huan_html
+    }
+
+    function tiangan() {
+        let tiangan = ['壬　　　癸', '　　己　　', '甲　　　乙', '　　　　　', '丙　　　丁', '　　戊　　', '庚　　　辛', '　　　　　']
+
+        let tiangan_html = ''
+        for (let i = 0; i < 8; i++) {
+            tiangan_html += '<div class="item-tiangan-bar" style="transform: rotate(' + (i) * 45 + 'deg)">' + tiangan[i] + '</div>'
+        }
+        document.getElementById('tiangan_huan').innerHTML = tiangan_html
+    }
+
+
+    function dizhi() {
+        let dizhi = ['　　子　　', '丑　　　寅', '　　卯　　', '辰　　　巳', '　　午　　', '未　　　申', '　　酉　　', '戌　　　亥']
+
+        let dizhi_html = ''
+        for (let i = 0; i < 8; i++) {
+            dizhi_html += '<div class="item-dizhi-bar" style="transform: rotate(' + (i) * 45 + 'deg)">' + dizhi[i] + '</div>'
+        }
+        document.getElementById('dizhi_huan').innerHTML = dizhi_html
+    }
+
+    function wuxing() {
+        let wuxing = ['　　水　　', '　　土　　', '　　木　　', '　　木　　', '　　火　　', '　　土　　', '　　金　　', '　　金　　']
+
+        let wuxing_html = ''
+        for (let i = 0; i < 8; i++) {
+            wuxing_html += '<div class="item-wuxing-bar" style="transform: rotate(' + (i) * 45 + 'deg)">' + wuxing[i] + '</div>'
+        }
+        document.getElementById('wuxing_huan').innerHTML = wuxing_html
+    }
+
+
+    function bagua_hou() {
+
+        let bagua_hou = [
+            { char: '☵', name: '坎', 'bin6': '00ff00' },
+            { char: '☶', name: '艮', 'bin6': '0000ff' },
+            { char: '☳', name: '震', 'bin6': 'ff0000' },
+            { char: '☴', name: '巽', 'bin6': '00ffff' },
+            { char: '☲', name: '离', 'bin6': 'ff00ff' },
+            { char: '☷', name: '坤', 'bin6': '000000' },
+            { char: '☱', name: '兑', 'bin6': 'ffff00' },
+            { char: '☰', name: '乾', 'bin6': 'ffffff' }]
+
+        let bagua_hou_html = ''
+
+        for (let i = 0; i < 8; i++) {
+            bagua_hou_html += '<div class="item-bagua_hou-bar" style=" color:#' + bagua_hou[i].bin6 + ';transform: rotate(' + (i) * 45 + 'deg)"> <span class="char">' + bagua_hou[i].char + '</span></div>'
+        }
+
+        document.getElementById('bagua_hou_huan').innerHTML = bagua_hou_html
+
+
+    }
+
+
+    function bagua_xian() {
+
+        let bagua_xian = [
+
+
+
+
+            { char: '☷', name: '坤', 'bin6': '000000', index: 8 },
+            { char: '☳', name: '震', 'bin6': 'ff0000', index: 4 },
+            { char: '☲', name: '离', 'bin6': 'ff00ff', index: 3 },
+            { char: '☱', name: '兑', 'bin6': 'ffff00', index: 2 },
+            { char: '☰', name: '乾', 'bin6': 'ffffff', index: 1 },
+            { char: '☴', name: '巽', 'bin6': '00ffff', index: 5 },
+            { char: '☵', name: '坎', 'bin6': '00ff00', index: 6 },
+            { char: '☶', name: '艮', 'bin6': '0000ff', index: 7 },
+
+
+
+
+
+
+
+        ]
+
+        let bagua_xian_html = ''
+
+        for (let i = 0; i < 8; i++) {
+            bagua_xian_html += '<div class="item-bagua_xian-bar" style=" color:#' + bagua_xian[i].bin6 + ';transform: rotate(' + (i) * 45 + 'deg)"><span class="char">' + bagua_xian[i].char + '</span></div>'
+        }
+
+        document.getElementById('bagua_xian_huan').innerHTML = bagua_xian_html
+
+
+    }
+
+    window.onload = function () {
+        show_64_html()
+        show_64_huan()
+        show_ganzhi()
+        show_xingxiu()
+        show_jieqi()
+        tiangan()
+        dizhi()
+        wuxing()
+        bagua_hou()
+        bagua_xian()
+    }
+
+</script>
