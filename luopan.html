@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>东方日历罗盘</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #FFF;
+        }
+    </style>
+</head>
+<body>
+    <svg id="compass" style="background-color: #000;" width="960" height="960" viewBox="-480 -480 960 960">
+        <defs>
+            <clipPath id="moon-clip">
+                <circle cx="0" cy="0" r="8" />
+            </clipPath>
+        </defs>
+
+        <g id="dial-360" stroke="#08fcec" stroke-width="1"></g>
+        <g id="ring-64-hexagrams" text-anchor="middle" dominant-baseline="middle"></g>
+        <g id="ring-64-arcs" stroke="rgba(255,255,255,0.5)" stroke-width="0.5"></g>
+        <g id="ring-60-jiazi" text-anchor="middle" dominant-baseline="middle"></g>
+        <g id="ring-30-moon-phases"></g>
+        <g id="ring-28-xiu" text-anchor="middle" dominant-baseline="middle"></g>
+        <g id="ring-24-jieqi" text-anchor="middle" dominant-baseline="middle"></g>
+        <g id="ring-30-luni" text-anchor="middle" dominant-baseline="middle"></g>
+        <g id="ring-12-luni" text-anchor="middle" dominant-baseline="middle"></g>
+        <g id="ring-12-xiaoxi" stroke="none"></g>
+        <g id="ring-12-xiaoxi-name" text-anchor="middle" dominant-baseline="middle"></g>
+        <g id="ring-24-shan" text-anchor="middle" dominant-baseline="middle"></g>
+        <g id="ring-luoshu"></g>
+        <g id="ring-12-bagua-hou"></g>
+        <g id="center-taiji">
+            <circle id="taiji-background" cx="0" cy="0" />
+            <path id="yin-fish-shape" />
+            <circle id="eye-in-yin" />
+            <circle id="eye-in-yang" />
+            <g id="taiji-grid"></g>
+        </g>
+    </svg>
+
+    <script>
+        /**
+         * 东方日历罗盘类 - 修复 NaN 异常版
+         */
+        class OrientalCompass {
+            // 静态常量 - 样式配置
+            static get CONSTANTS() {
+                return {
+                    BACKGROUND_COLOR: "#000000",
+                    PRIMARY_COLOR: "#08fcec", // 前景主色
+                    SVG_NAMESPACE: "http://www.w3.org/2000/svg",
+                    COMPASS_SIZE: 960,
+                    BASE_RADIUS: 480,
+                    TICK_LENGTH: 5,
+                    FILL_PADDING: 0.5,
+                    GRID_STROKE_WIDTH: 0.5,
+                    YAO_HEIGHT: 6, // 爻的高度
+                    MOON_RADIUS: 8, // 月相小圆半径
+                    DOT_RADIUS: 2.5, // 洛书圆点半径
+                };
+            }
+
+            // 静态数据 - 罗盘基础数据
+            static get DATA() {
+                return {
+                    // 64卦数据
+                    gua64: [
+                        { char: "䷁", name: "坤" }, { char: "䷖", name: "剥" }, { char: "䷇", name: "比" }, { char: "䷓", name: "观" }, { char: "䷏", name: "豫" }, { char: "䷢", name: "晋" }, { char: "䷬", name: "萃" }, { char: "䷋", name: "否" },
+                        { char: "䷎", name: "谦" }, { char: "䷳", name: "艮" }, { char: "䷦", name: "蹇" }, { char: "䷴", name: "渐" }, { char: "䷽", name: "小过" }, { char: "䷥", name: "旅" }, { char: "䷞", name: "咸" }, { char: "䷠", name: "遁" },
+                        { char: "䷆", name: "师" }, { char: "䷃", name: "蒙" }, { char: "䷜", name: "坎" }, { char: "䷺", name: "涣" }, { char: "䷧", name: "解" }, { char: "䷿", name: "未济" }, { char: "䷮", name: "困" }, { char: "䷅", name: "讼" },
+                        { char: "䷭", name: "升" }, { char: "䷑", name: "蛊" }, { char: "䷯", name: "井" }, { char: "䷸", name: "巽" }, { char: "䷟", name: "恒" }, { char: "䷱", name: "鼎" }, { char: "䷛", name: "大过" }, { char: "䷫", name: "姤" },
+                        { char: "䷗", name: "复" }, { char: "䷚", name: "颐" }, { char: "䷂", name: "屯" }, { char: "䷩", name: "益" }, { char: "䷲", name: "震" }, { char: "䷔", name: "噬嗑" }, { char: "䷐", name: "随" }, { char: "䷘", name: "无妄" },
+                        { char: "䷣", name: "明夷" }, { char: "䷕", name: "贲" }, { char: "䷾", name: "既济" }, { char: "䷤", name: "家人" }, { char: "䷶", name: "丰" }, { char: "䷝", name: "离" }, { char: "䷰", name: "革" }, { char: "䷌", name: "同人" },
+                        { char: "䷒", name: "临" }, { char: "䷨", name: "损" }, { char: "䷻", name: "节" }, { char: "䷼", name: "中孚" }, { char: "䷵", name: "归妹" }, { char: "䷥", name: "睽" }, { char: "䷹", name: "兑" }, { char: "䷉", name: "履" },
+                        { char: "䷊", name: "泰" }, { char: "䷙", name: "大畜" }, { char: "䷄", name: "需" }, { char: "䷈", name: "小畜" }, { char: "䷡", name: "大壮" }, { char: "䷍", name: "大有" }, { char: "䷪", name: "夬" }, { char: "䷀", name: "乾" },
+                    ],
+                    // 60甲子
+                    jiazi60: [
+                        '甲子', '乙丑', '丙寅', '丁卯', '戊辰', '己巳', '庚午', '辛未', '壬申', '癸酉',
+                        '甲戌', '乙亥', '丙子', '丁丑', '戊寅', '己卯', '庚辰', '辛巳', '壬午', '癸未',
+                        '甲申', '乙酉', '丙戌', '丁亥', '戊子', '己丑', '庚寅', '辛卯', '壬辰', '癸巳',
+                        '甲午', '乙未', '丙申', '丁酉', '戊戌', '己亥', '庚子', '辛丑', '壬寅', '癸卯',
+                        '甲辰', '乙巳', '丙午', '丁未', '戊申', '己酉', '庚戌', '辛亥', '壬子', '癸丑',
+                        '甲寅', '乙卯', '丙辰', '丁巳', '戊午', '己未', '庚申', '辛酉', '壬戌', '癸亥'
+                    ],
+                    // 28星宿（倒序后确认'虚'存在）
+                    xiu28: ['轸', '翼', '张', '星', '柳', '鬼', '井', '参', '觜', '毕', '昴', '胃', '娄', '奎', '壁', '室', '危', '虚', '女', '牛', '斗', '箕', '尾', '心', '房', '氐', '亢', '角'],
+                    // 24节气
+                    jieqi24: ['立春', '雨水', '惊蛰', '春分', '清明', '谷雨', '立夏', '小满', '芒种', '夏至', '小暑', '大暑', '立秋', '处暑', '白露', '秋分', '寒露', '霜降', '立冬', '小雪', '大雪', '冬至', '小寒', '大寒'],
+                    // 阴历初一到三十
+                    luni30: ['初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十', '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十', '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'],
+                    // 阴历月份（确认'冬'存在）
+                    luni12: ['正', '二', '三', '四', '五', '六', '七', '八', '九', '十', '冬', '腊'],
+                    // 12消息卦
+                    xiaoxi12: [
+                        { name: "复", bin6: "000001" }, { name: "临", bin6: "000011" }, { name: "泰", bin6: "000111" }, { name: "大壮", bin6: "001111" },
+                        { name: "夬", bin6: "011111" }, { name: "乾", bin6: "111111" }, { name: "姤", bin6: "111110" }, { name: "遁", bin6: "111100" },
+                        { name: "否", bin6: "111000" }, { name: "观", bin6: "110000" }, { name: "剥", bin6: "100000" }, { name: "坤", bin6: "000000" }
+                    ],
+                    // 二十四山
+                    shan24: [
+                        '壬', '子', '癸', '丑', '艮', '寅', '甲', '卯', '乙', '辰', '巽', '巳',
+                        '丙', '午', '丁', '未', '坤', '申', '庚', '酉', '辛', '戌', '乾', '亥'
+                    ],
+                    // 洛书数据
+                    luoshu: [1, 8, 3, 4, 9, 2, 7, 6],
+                    // 后天八卦（确认'☵'存在）
+                    baguaHou: ['☵', '☶', '☳', '☴', '☲', '☷', '☱', '☰']
+                };
+            }
+
+            /**
+             * 构造函数
+             * @param {string} containerId - SVG容器ID
+             */
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                this.constants = OrientalCompass.CONSTANTS;
+                this.data = OrientalCompass.DATA;
+                
+                // 初始化所有半径变量，避免undefined
+                this.jiaziRingInnerRadius = 0;
+                this.xiuRingInnerRadius = 0;
+                this.jieqiRadius24 = 0;
+                this.luniRadius30 = 0;
+                this.luniRadius12 = 0;
+                this.xiaoxiRingInnerRadius = 0;
+                this.xiaoxiNameRadius = 0;
+                this.shanRingInnerRadius = 0;
+                this.luoshuRingInnerRadius = 0;
+
+                this.init();
+            }
+
+            /**
+             * 初始化罗盘 - 按顺序执行所有绘制方法
+             */
+            init() {
+                // 预处理64卦数据（添加二进制编码）
+                this.processedGua64 = this.processGua64Data();
+                
+                // 依次绘制各层（确保依赖顺序正确）
+                this.draw360Dial();
+                this.draw64Hexagrams();
+                this.draw64HexagramArcs();
+                this.drawJiazi60Ring();
+                this.drawXiu28Ring();
+                this.drawJieqi24Ring();
+                this.drawLuni30Ring();
+                this.drawLuni12Ring();
+                this.drawMoonPhasesRing();
+                this.draw12XiaoxiRing();
+                this.draw12XiaoxiNameRing();
+                this.draw24ShanRing();
+                this.drawLuoshuRing();
+                this.drawHouBaguaRing();
+                this.drawTaiji();
+            }
+
+            /**
+             * 工具方法：创建SVG元素
+             * @param {string} tag - SVG标签名
+             * @returns {SVGElement}
+             */
+            createSvgElement(tag) {
+                return document.createElementNS(this.constants.SVG_NAMESPACE, tag);
+            }
+
+            /**
+             * 工具方法：数字转6位二进制字符串
+             * @param {number} num - 数字
+             * @returns {string}
+             */
+            numberToBin6(num) {
+                return num.toString(2).padStart(6, '0');
+            }
+
+            /**
+             * 工具方法：预处理64卦数据（添加二进制编码和排序）
+             * @returns {Array} 处理后的64卦数据
+             */
+            processGua64Data() {
+                let arr64 = JSON.parse(JSON.stringify(this.data.gua64));
+                arr64.forEach((item, index) => {
+                    item.bin6 = this.numberToBin6(index);
+                    item.index = index;
+                });
+                const goToKun = arr64.filter(item => item.index > 31);
+                const fuToQian = arr64.filter(item => item.index < 32).sort((a, b) => b.index - a.index);
+                return fuToQian.concat(goToKun);
+            }
+
+            /**
+             * 工具方法：创建弧形路径
+             * @param {number} innerRadius - 内半径
+             * @param {number} outerRadius - 外半径
+             * @param {number} startAngle - 起始角度
+             * @param {number} endAngle - 结束角度
+             * @returns {string} 路径字符串
+             */
+            createArcPath(innerRadius, outerRadius, startAngle, endAngle) {
+                // 容错：确保半径和角度是数字
+                innerRadius = Number(innerRadius) || 0;
+                outerRadius = Number(outerRadius) || 0;
+                startAngle = Number(startAngle) || 0;
+                endAngle = Number(endAngle) || 0;
+
+                const startRad = startAngle * (Math.PI / 180);
+                const endRad = endAngle * (Math.PI / 180);
+                const x1 = innerRadius * Math.cos(startRad);
+                const y1 = innerRadius * Math.sin(startRad);
+                const x2 = outerRadius * Math.cos(startRad);
+                const y2 = outerRadius * Math.sin(startRad);
+                const x3 = outerRadius * Math.cos(endRad);
+                const y3 = outerRadius * Math.sin(endRad);
+                const x4 = innerRadius * Math.cos(endRad);
+                const y4 = innerRadius * Math.sin(endRad);
+                const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+                return [
+                    "M", x1, y1, "L", x2, y2,
+                    "A", outerRadius, outerRadius, 0, largeArcFlag, 1, x3, y3,
+                    "L", x4, y4,
+                    "A", innerRadius, innerRadius, 0, largeArcFlag, 0, x1, y1, "Z"
+                ].join(" ");
+            }
+
+            /**
+             * 通用环绘制方法（添加完整容错）
+             * @param {Object} config - 配置项
+             * @returns {number} 环内半径
+             */
+            createRing(config) {
+                // 解构配置并添加默认值
+                const { 
+                    id, 
+                    data = [], 
+                    baseRadius = 0, 
+                    spaceToOuter = 0, 
+                    fontSize = 10, 
+                    initialRotationInDegrees = 0, 
+                    alignTo = null, 
+                    noTick = false, 
+                    noCircle = false 
+                } = config;
+
+                const ring = document.getElementById(id);
+                if (!ring) return 0; // 容错：元素不存在直接返回
+
+                const { TICK_HEIGHT, PRIMARY_COLOR } = this.constants;
+                const SPACE_TEXT_TO_TICK = 6;
+
+                // 容错：确保所有数值是数字
+                const baseRadiusNum = Number(baseRadius) || 0;
+                const spaceToOuterNum = Number(spaceToOuter) || 0;
+                const fontSizeNum = Number(fontSize) || 10;
+                const tickHeightNum = Number(TICK_HEIGHT) || 5;
+
+                // 计算半径（添加容错，避免负数/NaN）
+                const textRadius = Math.max(0, baseRadiusNum - spaceToOuterNum - (tickHeightNum + SPACE_TEXT_TO_TICK + fontSizeNum / 2));
+                const tickOuterRadius = Math.max(0, textRadius - SPACE_TEXT_TO_TICK - fontSizeNum / 2);
+                const tickInnerRadius = Math.max(0, tickOuterRadius - tickHeightNum);
+
+                // 绘制基准圆环
+                if (!noCircle) {
+                    const baseCircle = this.createSvgElement("circle");
+                    baseCircle.setAttribute("r", tickInnerRadius);
+                    baseCircle.setAttribute("cx", 0);
+                    baseCircle.setAttribute("cy", 0);
+                    baseCircle.setAttribute("stroke-width", 0.5);
+                    baseCircle.setAttribute("fill", "none");
+                    baseCircle.setAttribute("stroke", PRIMARY_COLOR);
+                    ring.appendChild(baseCircle);
+                }
+
+                // 计算角度（容错：数据为空时直接返回）
+                const dataLen = data.length;
+                if (dataLen === 0) return tickInnerRadius;
+                
+                const angleStep = 360 / dataLen;
+                let initialRotation = Number(initialRotationInDegrees) || 0;
+
+                // 对齐逻辑（添加容错）
+                if (alignTo && alignTo.item && typeof alignTo.angle === 'number') {
+                    const alignIndex = data.indexOf(alignTo.item);
+                    // 找不到匹配项时使用默认初始角度
+                    if (alignIndex !== -1) {
+                        initialRotation = alignTo.angle - (alignIndex * angleStep);
+                    }
+                }
+
+                // 绘制刻度和文字
+                for (let i = 0; i < dataLen; i++) {
+                    const currentAngleInDegrees = initialRotation + (i * angleStep);
+                    const angleRad = currentAngleInDegrees * (Math.PI / 180);
+
+                    // 绘制刻度线
+                    if (!noTick) {
+                        const tickLine = this.createSvgElement("line");
+                        // 计算坐标并容错
+                        const x1 = tickInnerRadius * Math.cos(angleRad) || 0;
+                        const y1 = tickInnerRadius * Math.sin(angleRad) || 0;
+                        const x2 = tickOuterRadius * Math.cos(angleRad) || 0;
+                        const y2 = tickOuterRadius * Math.sin(angleRad) || 0;
+
+                        tickLine.setAttribute("x1", x1);
+                        tickLine.setAttribute("y1", y1);
+                        tickLine.setAttribute("x2", x2);
+                        tickLine.setAttribute("y2", y2);
+                        tickLine.setAttribute("stroke-width", 0.5);
+                        tickLine.setAttribute("stroke", PRIMARY_COLOR);
+                        ring.appendChild(tickLine);
+                    }
+
+                    // 绘制文字
+                    const text = this.createSvgElement("text");
+                    // 计算文字坐标并容错
+                    const textX = textRadius * Math.cos(angleRad) || 0;
+                    const textY = textRadius * Math.sin(angleRad) || 0;
+                    const textRotation = (currentAngleInDegrees - 90) || 0;
+                    
+                    text.setAttribute("font-size", fontSizeNum);
+                    text.setAttribute("text-anchor", "middle");
+                    text.setAttribute("fill", PRIMARY_COLOR);
+                    // 容错：确保transform值有效
+                    text.setAttribute("transform", `translate(${textX}, ${textY}) rotate(${textRotation})`);
+                    text.textContent = data[i] || '';
+                    ring.appendChild(text);
+                }
+
+                return tickInnerRadius;
+            }
+
+            /**
+             * 绘制360度刻度盘
+             */
+            draw360Dial() {
+                const dial360 = document.getElementById("dial-360");
+                if (!dial360) return;
+
+                const { TICK_LENGTH, PRIMARY_COLOR } = this.constants;
+                const radius360 = 472;
+
+                for (let i = 0; i < 360; i++) {
+                    const line = this.createSvgElement("line");
+                    const angleRad = (i - 90) * (Math.PI / 180);
+                    const x1 = Math.cos(angleRad) * (radius360 - TICK_LENGTH);
+                    const y1 = Math.sin(angleRad) * (radius360 - TICK_LENGTH);
+                    const x2 = Math.cos(angleRad) * radius360;
+                    const y2 = Math.sin(angleRad) * radius360;
+
+                    line.setAttribute("x1", x1);
+                    line.setAttribute("y1", y1);
+                    line.setAttribute("x2", x2);
+                    line.setAttribute("y2", y2);
+                    if (i % 90 === 0) {
+                        line.setAttribute("stroke-width", "3");
+                    }
+                    dial360.appendChild(line);
+                }
+            }
+
+            /**
+             * 绘制64卦文字环
+             */
+            draw64Hexagrams() {
+                const ring64 = document.getElementById("ring-64-hexagrams");
+                if (!ring64 || !this.processedGua64 || this.processedGua64.length === 0) return;
+
+                const { PRIMARY_COLOR } = this.constants;
+                const radiusAnchor = 435;
+                const angleStep = 360 / 64;
+                const angleOffset = angleStep / 2;
+                const initialRotationInDegrees = 270 + angleOffset;
+
+                this.processedGua64.forEach((gua, i) => {
+                    const group = this.createSvgElement("g");
+                    const currentAngleInDegrees = initialRotationInDegrees + (i * angleStep);
+                    const angleRad = currentAngleInDegrees * (Math.PI / 180);
+                    // 容错：确保坐标有效
+                    const anchorX = radiusAnchor * Math.cos(angleRad) || 0;
+                    const anchorY = radiusAnchor * Math.sin(angleRad) || 0;
+                    const textRotation = (currentAngleInDegrees - 90) || 0;
+
+                    group.setAttribute("transform", `translate(${anchorX}, ${anchorY}) rotate(${textRotation})`);
+
+                    // 卦名
+                    const nameText = this.createSvgElement("text");
+                    nameText.setAttribute("y", -15);
+                    nameText.setAttribute("fill", PRIMARY_COLOR);
+                    nameText.setAttribute("font-size", "12px");
+                    nameText.textContent = gua.name || '';
+
+                    // 卦符
+                    const charText = this.createSvgElement("text");
+                    charText.setAttribute("y", 15);
+                    charText.setAttribute("fill", PRIMARY_COLOR);
+                    charText.setAttribute("font-size", "36px");
+                    charText.setAttribute("transform", "scale(1.6, 1)");
+                    charText.textContent = gua.char || '';
+
+                    group.appendChild(nameText);
+                    group.appendChild(charText);
+                    ring64.appendChild(group);
+                });
+            }
+
+            /**
+             * 绘制64卦弧形网格和填充
+             */
+            draw64HexagramArcs() {
+                const ring64Arcs = document.getElementById("ring-64-arcs");
+                if (!ring64Arcs || !this.processedGua64 || this.processedGua64.length === 0) return;
+
+                const { YAO_HEIGHT, PRIMARY_COLOR, GRID_STROKE_WIDTH, FILL_PADDING } = this.constants;
+                const arcRadiusInner = 368;
+                const arcAngleStep = 360 / 64;
+                const arcInitialRotation = 270 + (arcAngleStep / 2);
+
+                // 绘制网格骨架
+                const gridGroup = this.createSvgElement("g");
+                gridGroup.setAttribute("stroke", PRIMARY_COLOR);
+                gridGroup.setAttribute("stroke-width", GRID_STROKE_WIDTH);
+                gridGroup.setAttribute("fill", "none");
+
+                for (let i = 0; i < 64; i++) {
+                    const guaStartAngle = arcInitialRotation + (i * arcAngleStep) - (arcAngleStep / 2);
+                    const guaEndAngle = arcInitialRotation + (i * arcAngleStep) + (arcAngleStep / 2);
+                    for (let j = 0; j < 6; j++) {
+                        const currentInnerRadius = arcRadiusInner + (j * YAO_HEIGHT);
+                        const currentOuterRadius = currentInnerRadius + YAO_HEIGHT;
+                        const gridCellPath = this.createSvgElement("path");
+                        gridCellPath.setAttribute("d", this.createArcPath(currentInnerRadius, currentOuterRadius, guaStartAngle, guaEndAngle));
+                        gridGroup.appendChild(gridCellPath);
+                    }
+                }
+                ring64Arcs.appendChild(gridGroup);
+
+                // 填充阴爻
+                const fillGroup = this.createSvgElement("g");
+                fillGroup.setAttribute("fill", PRIMARY_COLOR);
+                fillGroup.setAttribute("stroke", "none");
+
+                this.processedGua64.forEach((gua, i) => {
+                    const guaStartAngle = arcInitialRotation + (i * arcAngleStep) - (arcAngleStep / 2);
+                    const guaEndAngle = arcInitialRotation + (i * arcAngleStep) + (arcAngleStep / 2);
+
+                    for (let j = 0; j < 6; j++) {
+                        const bin6 = gua.bin6 || '';
+                        const yaoType = bin6.split('').reverse().join('')[j] || '0';
+
+                        if (yaoType === '1') {
+                            const fillInnerRadius = arcRadiusInner + (j * YAO_HEIGHT) + FILL_PADDING;
+                            const fillOuterRadius = fillInnerRadius + YAO_HEIGHT - (2 * FILL_PADDING);
+                            const avgRadius = (fillInnerRadius + fillOuterRadius) / 2;
+                            const anglePaddingInDegrees = (180 / Math.PI) * Math.asin(FILL_PADDING / avgRadius) || 0;
+
+                            const fillPath = this.createSvgElement("path");
+                            fillPath.setAttribute("d", this.createArcPath(
+                                fillInnerRadius,
+                                fillOuterRadius,
+                                guaStartAngle + anglePaddingInDegrees,
+                                guaEndAngle - anglePaddingInDegrees
+                            ));
+                            fillGroup.appendChild(fillPath);
+                        }
+                    }
+                });
+                ring64Arcs.appendChild(fillGroup);
+            }
+
+            /**
+             * 绘制60甲子环
+             */
+            drawJiazi60Ring() {
+                this.jiaziRingInnerRadius = this.createRing({
+                    id: 'ring-60-jiazi',
+                    data: this.data.jiazi60,
+                    baseRadius: 378,
+                    spaceToOuter: 8,
+                    initialRotationInDegrees: 90
+                });
+            }
+
+            /**
+             * 绘制28星宿环
+             */
+            drawXiu28Ring() {
+                this.xiuRingInnerRadius = this.createRing({
+                    id: 'ring-28-xiu',
+                    data: this.data.xiu28,
+                    baseRadius: this.jiaziRingInnerRadius + 17,
+                    spaceToOuter: 11,
+                    alignTo: { item: '虚', angle: 90 }
+                });
+            }
+
+            /**
+             * 绘制24节气环
+             */
+            drawJieqi24Ring() {
+                this.jieqiRadius24 = this.createRing({
+                    id: 'ring-24-jieqi',
+                    data: this.data.jieqi24,
+                    baseRadius: 270,
+                    spaceToOuter: 8,
+                    alignTo: { item: '冬至', angle: 90 }
+                });
+            }
+
+            /**
+             * 绘制阴历30天环
+             */
+            drawLuni30Ring() {
+                this.luniRadius30 = this.createRing({
+                    id: 'ring-30-luni',
+                    data: this.data.luni30,
+                    baseRadius: 302,
+                    spaceToOuter: 10,
+                    alignTo: { item: '三十', angle: 90 }
+                });
+            }
+
+            /**
+             * 绘制阴历12月环
+             */
+            drawLuni12Ring() {
+                this.luniRadius12 = this.createRing({
+                    id: 'ring-12-luni',
+                    data: this.data.luni12,
+                    baseRadius: 156,
+                    spaceToOuter: 12,
+                    noTick: true,
+                    alignTo: { item: '冬', angle: 90 }
+                });
+            }
+
+            /**
+             * 生成月相路径
+             * @param {number} day - 日期(1-30)
+             * @param {number} radius - 半径
+             * @returns {string} 路径字符串
+             */
+            generateMoonPathD(day, radius) {
+                // 容错
+                day = Number(day) || 1;
+                radius = Number(radius) || this.constants.MOON_RADIUS;
+                
+                let d = "";
+                if (day <= 15) {
+                    const i = (day - 1) / 15;
+                    const x = radius - (2 * radius * i);
+                    const sweep = (x < 0) ? 1 : 0;
+                    const rx = Math.abs(x);
+                    d = `M 0,${-radius} A ${radius},${radius} 0 0,1 0,${radius} A ${rx},${radius} 0 0,${sweep} 0,${-radius} Z`;
+                } else {
+                    const i = (31 - day) / 15;
+                    const x = radius - (2 * radius * i);
+                    const sweep = (x < 0) ? 0 : 1;
+                    const rx = Math.abs(x);
+                    d = `M 0,${-radius} A ${radius},${radius} 0 0,0 0,${radius} A ${rx},${radius} 0 0,${sweep} 0,${-radius} Z`;
+                }
+                return d;
+            }
+
+            /**
+             * 绘制30月相环
+             */
+            drawMoonPhasesRing() {
+                const ring = document.getElementById('ring-30-moon-phases');
+                if (!ring) return;
+
+                const { MOON_RADIUS, PRIMARY_COLOR } = this.constants;
+                const moonPhaseData = Array.from({ length: 30 }, (_, i) => i + 1);
+                
+                // 容错：确保前一个半径有效
+                const baseRadius = (this.xiuRingInnerRadius || 0) + 2;
+                const ringRadius = Math.max(0, baseRadius - 10 - MOON_RADIUS);
+                const angleStep = 360 / 30;
+                let initialRotation = 90 - (0 * angleStep);
+
+                for (let i = 0; i < moonPhaseData.length; i++) {
+                    const day = moonPhaseData[i];
+                    const currentAngleInDegrees = initialRotation + (i * angleStep);
+                    const angleRad = currentAngleInDegrees * (Math.PI / 180);
+                    
+                    // 容错：确保坐标有效
+                    const groupX = ringRadius * Math.cos(angleRad) || 0;
+                    const groupY = ringRadius * Math.sin(angleRad) || 0;
+
+                    const group = this.createSvgElement("g");
+                    group.setAttribute("transform", `translate(${groupX}, ${groupY})`);
+
+                    // 外边框
+                    const borderCircle = this.createSvgElement("circle");
+                    borderCircle.setAttribute("r", MOON_RADIUS);
+                    borderCircle.setAttribute("fill", "none");
+                    borderCircle.setAttribute("stroke", PRIMARY_COLOR);
+                    borderCircle.setAttribute("stroke-width", 0.2);
+                    group.appendChild(borderCircle);
+
+                    // 月相路径
+                    const path = this.createSvgElement("path");
+                    path.setAttribute("d", this.generateMoonPathD(day, MOON_RADIUS));
+                    path.setAttribute("fill", PRIMARY_COLOR);
+                    path.setAttribute("stroke", "none");
+                    path.setAttribute("clip-path", "url(#moon-clip)");
+                    group.appendChild(path);
+
+                    ring.appendChild(group);
+                }
+            }
+
+            /**
+             * 绘制12消息卦环
+             */
+            draw12XiaoxiRing() {
+                const ring = document.getElementById('ring-12-xiaoxi');
+                if (!ring) return;
+
+                const { YAO_HEIGHT, PRIMARY_COLOR, GRID_STROKE_WIDTH, FILL_PADDING } = this.constants;
+                const baseRadius = 216;
+                const spaceToOuter = 15;
+                const arcRadiusInner = Math.max(0, baseRadius - spaceToOuter - (6 * YAO_HEIGHT));
+                const angleStep = 360 / 12;
+                const initialRotation = 105;
+
+                // 绘制网格
+                const gridGroup = this.createSvgElement("g");
+                gridGroup.setAttribute("stroke", PRIMARY_COLOR);
+                gridGroup.setAttribute("stroke-width", GRID_STROKE_WIDTH);
+                gridGroup.setAttribute("fill", "none");
+
+                for (let i = 0; i < 12; i++) {
+                    const startAngle = initialRotation + (i * angleStep) - (angleStep / 2);
+                    const endAngle = initialRotation + (i * angleStep) + (angleStep / 2);
+                    for (let j = 0; j < 6; j++) {
+                        const rIn = arcRadiusInner + (j * YAO_HEIGHT);
+                        const rOut = rIn + YAO_HEIGHT;
+                        const path = this.createSvgElement("path");
+                        path.setAttribute("d", this.createArcPath(rIn, rOut, startAngle, endAngle));
+                        gridGroup.appendChild(path);
+                    }
+                }
+                ring.appendChild(gridGroup);
+
+                // 填充阴爻
+                const fillGroup = this.createSvgElement("g");
+                fillGroup.setAttribute("fill", PRIMARY_COLOR);
+
+                this.data.xiaoxi12.forEach((gua, i) => {
+                    const startAngle = initialRotation + (i * angleStep) - (angleStep / 2);
+                    const endAngle = initialRotation + (i * angleStep) + (angleStep / 2);
+                    const bin6 = gua.bin6 || '';
+
+                    for (let j = 0; j < 6; j++) {
+                        const yaoType = bin6[j] || '0';
+                        if (yaoType === '1') {
+                            const fIn = arcRadiusInner + (j * YAO_HEIGHT) + FILL_PADDING;
+                            const fOut = fIn + YAO_HEIGHT - (2 * FILL_PADDING);
+                            const avgR = (fIn + fOut) / 2;
+                            const aPadding = (180 / Math.PI) * Math.asin(FILL_PADDING / avgR) || 0;
+
+                            const fillPath = this.createSvgElement("path");
+                            fillPath.setAttribute("d", this.createArcPath(fIn, fOut, startAngle + aPadding, endAngle - aPadding));
+                            fillGroup.appendChild(fillPath);
+                        }
+                    }
+                });
+                ring.appendChild(fillGroup);
+
+                this.xiaoxiRingInnerRadius = arcRadiusInner;
+            }
+
+            /**
+             * 绘制12消息卦名环
+             */
+            draw12XiaoxiNameRing() {
+                const xiaoxiNames = this.data.xiaoxi12.map(item => item.name || '');
+                this.xiaoxiNameRadius = this.createRing({
+                    id: 'ring-12-xiaoxi-name',
+                    data: xiaoxiNames,
+                    baseRadius: (this.xiaoxiRingInnerRadius || 0) + 16,
+                    spaceToOuter: 10,
+                    noTick: true,
+                    alignTo: { item: '复', angle: 90 }
+                });
+            }
+
+            /**
+             * 绘制二十四山环
+             */
+            draw24ShanRing() {
+                this.shanRingInnerRadius = this.createRing({
+                    id: 'ring-24-shan',
+                    data: this.data.shan24,
+                    baseRadius: 242,
+                    spaceToOuter: 8,
+                    noTick: true,
+                    noCircle: true,
+                    alignTo: { item: '子', angle: 90 }
+                });
+            }
+
+            /**
+             * 绘制洛书环
+             */
+            drawLuoshuRing() {
+                const ring = document.getElementById('ring-luoshu');
+                if (!ring) return;
+
+                const { DOT_RADIUS, PRIMARY_COLOR } = this.constants;
+                const baseRadius = 120;
+                const spaceToOuter = 15;
+                const ringRadius = Math.max(0, baseRadius - spaceToOuter - DOT_RADIUS);
+                const angleStep = 360 / 8;
+                const initialRotation = 90;
+
+                this.data.luoshu.forEach((count, i) => {
+                    count = Number(count) || 0;
+                    const centerAngle = initialRotation + (i * angleStep);
+                    const group = this.createSvgElement("g");
+                    const dotSpacingAngle = 4;
+                    const totalWidthAngle = (count - 1) * dotSpacingAngle;
+                    const startAngle = centerAngle - (totalWidthAngle / 2);
+
+                    for (let n = 0; count > 0 && n < count; n++) {
+                        const currentDotAngle = startAngle + (n * dotSpacingAngle);
+                        const angleRad = currentDotAngle * (Math.PI / 180);
+                        // 容错：确保坐标有效
+                        const x = ringRadius * Math.cos(angleRad) || 0;
+                        const y = ringRadius * Math.sin(angleRad) || 0;
+
+                        const dot = this.createSvgElement("circle");
+                        dot.setAttribute("cx", x);
+                        dot.setAttribute("cy", y);
+                        dot.setAttribute("r", DOT_RADIUS);
+
+                        // 奇数阳（空心），偶数阴（实心）
+                        if (count % 2 !== 0) {
+                            dot.setAttribute("fill", "none");
+                            dot.setAttribute("stroke", PRIMARY_COLOR);
+                            dot.setAttribute("stroke-width", 1);
+                        } else {
+                            dot.setAttribute("fill", PRIMARY_COLOR);
+                            dot.setAttribute("stroke", "none");
+                        }
+                        group.appendChild(dot);
+                    }
+                    ring.appendChild(group);
+                });
+
+                this.luoshuRingInnerRadius = Math.max(0, ringRadius - DOT_RADIUS);
+            }
+
+            /**
+             * 绘制后天八卦环
+             */
+            drawHouBaguaRing() {
+                this.createRing({
+                    id: 'ring-12-bagua-hou',
+                    data: this.data.baguaHou,
+                    baseRadius: 118,
+                    fontSize: 16,
+                    spaceToOuter: 12,
+                    noTick: true,
+                    noCircle: true,
+                    alignTo: { item: '☵', angle: 90 }
+                });
+            }
+
+            /**
+             * 绘制中心太极图
+             */
+            drawTaiji() {
+                const { BACKGROUND_COLOR, PRIMARY_COLOR } = this.constants;
+                // 容错：确保半径有效
+                const maxR = Math.max(0, (this.luoshuRingInnerRadius || 0) - 35);
+                
+                const taijiBg = document.getElementById("taiji-background");
+                const yinFish = document.getElementById("yin-fish-shape");
+                const eyeInYin = document.getElementById("eye-in-yin");
+                const eyeInYang = document.getElementById("eye-in-yang");
+                const grid = document.getElementById("taiji-grid");
+
+                if (!taijiBg || !yinFish || !eyeInYin || !eyeInYang || !grid) return;
+
+                // 背景圆
+                taijiBg.setAttribute("r", maxR);
+                taijiBg.setAttribute("fill", PRIMARY_COLOR);
+
+                // 阴鱼S曲线
+                let pathData = "";
+                let leftPoints = [], rightPoints = [];
+
+                for (let i = 0; i <= 36; i++) {
+                    let step = 12 * (i / 36);
+                    let ang = 270 - step * 15;
+                    let r = maxR * (1 - step / 12);
+                    let rad = ang * (Math.PI / 180);
+                    leftPoints.push({ x: Math.cos(rad) * r, y: Math.sin(rad) * r });
+                }
+                for (let i = 0; i <= 36; i++) {
+                    let step = 12 * (i / 36);
+                    let ang = -90 + step * 15;
+                    let r = maxR * (step / 12);
+                    let rad = ang * (Math.PI / 180);
+                    rightPoints.push({ x: Math.cos(rad) * r, y: Math.sin(rad) * r });
+                }
+
+                pathData += `M ${leftPoints[0]?.x || 0} ${leftPoints[0]?.y || 0} `;
+                leftPoints.forEach(p => pathData += `L ${p.x || 0} ${p.y || 0} `);
+                rightPoints.forEach(p => pathData += `L ${p.x || 0} ${p.y || 0} `);
+                pathData += `A ${maxR} ${maxR} 0 0 1 ${leftPoints[0]?.x || 0} ${leftPoints[0]?.y || 0} Z`;
+
+                yinFish.setAttribute("d", pathData);
+                yinFish.setAttribute("fill", BACKGROUND_COLOR);
+                yinFish.setAttribute("stroke", PRIMARY_COLOR);
+                yinFish.setAttribute("stroke-width", "0.5");
+
+                // 鱼眼
+                eyeInYin.setAttribute("cx", -maxR * 0.25 || 0);
+                eyeInYin.setAttribute("cy", 0);
+                eyeInYin.setAttribute("r", maxR * 0.05 || 0);
+                eyeInYin.setAttribute("fill", BACKGROUND_COLOR);
+
+                eyeInYang.setAttribute("cx", maxR * 0.25 || 0);
+                eyeInYang.setAttribute("cy", 0);
+                eyeInYang.setAttribute("r", maxR * 0.05 || 0);
+                eyeInYang.setAttribute("fill", PRIMARY_COLOR);
+
+                // 米字格
+                grid.innerHTML = "";
+                for (let i = 0; i < 8; i++) {
+                    const ang = (i * 45) * Math.PI / 180;
+                    const line = this.createSvgElement("line");
+                    line.setAttribute("x1", 0);
+                    line.setAttribute("y1", 0);
+                    line.setAttribute("x2", Math.cos(ang) * maxR || 0);
+                    line.setAttribute("y2", Math.sin(ang) * maxR || 0);
+                    line.setAttribute("stroke", "#FFFFFF");
+                    line.setAttribute("stroke-width", "0.5");
+                    line.setAttribute("opacity", ".5");
+                    grid.appendChild(line);
+                }
+
+                // 水平翻转
+                document.getElementById("center-taiji").setAttribute("transform", "scale(-1, 1)");
+            }
+        }
+
+        // 初始化罗盘（添加DOM加载完成判断）
+        if (document.readyState === "complete" || document.readyState === "interactive") {
+            new OrientalCompass("compass");
+        } else {
+            document.addEventListener("DOMContentLoaded", () => {
+                new OrientalCompass("compass");
+            });
+        }
+    </script>
+</body>
+</html>
